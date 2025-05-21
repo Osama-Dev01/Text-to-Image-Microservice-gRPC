@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  grpc-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - "50051:50051"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  rest-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    ports:
+      - "7860:7860"
+    depends_on:
+      - grpc-server
+    environment:
+      - GRPC_SERVER=grpc-server:50051

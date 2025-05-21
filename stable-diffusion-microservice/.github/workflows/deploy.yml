@@ -1,0 +1,40 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global credential.helper store
+          echo "https://USER:$HF_TOKEN@huggingface.co" > ~/.git-credentials
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+      - name: Clone Hugging Face Space
+        env:
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          SPACE_NAME: ${{ secrets.SPACE_NAME }}
+        run: |
+          git clone https://huggingface.co/spaces/$HF_USERNAME/$SPACE_NAME huggingface-space
+
+      - name: Copy files to Hugging Face Space
+        run: |
+          find . -maxdepth 1 -not -name "huggingface-space" -not -name "." -not -name ".git" -not -name ".github" | xargs -I {} cp -r {} huggingface-space/
+
+          cd huggingface-space
+          git status
+          git add .
+          git commit -m "Update from GitHub Actions"
+          git push
+

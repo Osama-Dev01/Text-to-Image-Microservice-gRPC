@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package image_generation;
+
+service ImageGenerator {
+  rpc GenerateImage (GenerationRequest) returns (GenerationResponse) {}
+}
+
+message GenerationRequest {
+  string prompt = 1;
+  string negative_prompt = 2;
+  int32 num_inference_steps = 3;
+  float guidance_scale = 4;
+}
+
+message GenerationResponse {
+  string status = 1;
+  string image = 2;  // base64 encoded image
+  string prompt = 3;
+}

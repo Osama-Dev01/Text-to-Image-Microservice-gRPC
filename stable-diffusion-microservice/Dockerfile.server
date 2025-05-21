@@ -1,0 +1,42 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PyTorch and CUDA
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# Create cache directory with proper permissions
+RUN mkdir -p /tmp/huggingface && \
+    chmod 777 /tmp/huggingface
+
+# Run as non-root user (if possible)
+USER 1000
+
+# Or if you need to run as root, ensure the directories are writable
+# RUN mkdir -p /tmp/huggingface && \
+#     chmod 777 /tmp/huggingface
+
+# Copy proto files and generate gRPC code
+COPY protos/ /app/protos/
+COPY generate_grpc.py /app/
+RUN pip install --no-cache-dir grpcio grpcio-tools
+RUN python generate_grpc.py
+
+# Install other dependencies
+COPY requirements.server.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy server code
+COPY server.py /app/
+
+# Expose gRPC port
+EXPOSE 50051
+
+# Run the gRPC server
+CMD ["python", "server.py"]
