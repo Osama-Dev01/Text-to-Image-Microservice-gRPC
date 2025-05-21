@@ -106,6 +106,4 @@ This project uses Stable Diffusion models for image generation. The specific mod
 
 This service requires a GPU for optimal performance. When deploying to Hugging Face Spaces, select at least a T4 GPU in the hardware settings for the Space. Although the service can run on CPU, it will be very slow.
 
-## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
